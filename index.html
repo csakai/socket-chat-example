@@ -22,6 +22,18 @@
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
+      $(function () {
+        console.log('sending req');
+        $.get('/messages', function (data) {
+            console.log('data', data);
+            data.forEach(function (datum) {
+              $('#messages').append($('<li>').text('<span>'+datum.sent+'</span> - ' + datum.msg));
+            });
+            $('#messages').append($('<li>').css('color', '#32CD32').text('Welcome to test chat'));
+          });
+      });
+    </script>
+    <script>
       var socket = io();
       $('form').submit(function (){
         socket.emit('chat message', $('#m').val());
@@ -32,7 +44,7 @@
         $('#messages').append($('<li>').text('<span>'+data.sent+'</span> - '+ data.msg));
       });
       socket.on('new user', function (msg){
-        $('#messages').append($('<li>').css('color', 'lime-green').text(msg));
+        $('#messages').append($('<li>').css('color', '#32CD32').text(msg));
       });
       socket.on('user disconnect', function (msg){
         $('#messages').append($('<li>').css('color', 'red').text(msg));

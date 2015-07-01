@@ -2,6 +2,7 @@ var app = require('express')();
 var http = require ('http').Server(app);
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
+var moment = require('moment');
 
 mongoose.connect('mongodb://localhost:27017/chat', function (err){
   if (err)
@@ -12,13 +13,25 @@ mongoose.connect('mongodb://localhost:27017/chat', function (err){
 
 var msgSchema = mongoose.Schema({
   msg: String,
-  sent: { type: Date, default: Date.now }
-});
+  sent: { type: Date, default: Date.now, index: true}
+  }, { autoIndex: false, versionKey: false });
 
 var Msg = mongoose.model('Message', msgSchema);
 
 app.get('/', function (req, res){
   res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/messages', function (req, res) {
+  console.log('got a request');
+  var twoMinutesAgo = moment().subtract(2, 'minutes');
+  Msg.find({ sent: { $gte: twoMinutesAgo } }, function (err, data) {
+    if (err)
+      throw err;
+    else {
+      return res.json(200, data);
+    }
+  });
 });
 var connectedUsers = {};
 
