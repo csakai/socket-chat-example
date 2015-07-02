@@ -27,27 +27,37 @@
         $.get('/messages', function (data) {
             console.log('data', data);
             data.forEach(function (datum) {
-              $('#messages').append($('<li>').text('<span>'+datum.sent+'</span> - ' + datum.msg));
+              $('#messages').append(fmtMessage(datum));
             });
-            $('#messages').append($('<li>').css('color', '#32CD32').text('Welcome to test chat'));
+            $('#messages').append(fmtMessage({msg: 'Welcome to test chat'}).css('color', '#32CD32'));
           });
       });
     </script>
     <script>
       var socket = io();
+      function fmtMessage (data) {
+        if (!data.sent) {
+          data.sent = new Date();
+        }
+        return $('<li><span class="timestamp">'
+          + data.sent.toLocaleString() + '</span> '
+          + data.msg + '</li>');
+      }
       $('form').submit(function (){
-        socket.emit('chat message', $('#m').val());
+        var data = { msg : $('#m').val() };
+        socket.emit('chat message', data.msg);
+        $('#messages').append(fmtMessage(data))
         $('#m').val('');
         return false;
       });
       socket.on('chat message', function (data){
-        $('#messages').append($('<li>').text('<span>'+data.sent+'</span> - '+ data.msg));
+        $('#messages').append(fmtMessage(data));
       });
-      socket.on('new user', function (msg){
-        $('#messages').append($('<li>').css('color', '#32CD32').text(msg));
+      socket.on('new user', function (data){
+        $('#messages').append(fmtMessage(data).css('color', '#32CD32'));
       });
-      socket.on('user disconnect', function (msg){
-        $('#messages').append($('<li>').css('color', 'red').text(msg));
+      socket.on('user disconnect', function (data){
+        $('#messages').append(fmtMessage(data).css('color', 'red'));
       });
     </script>
   </body>

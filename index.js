@@ -29,25 +29,25 @@ app.get('/messages', function (req, res) {
     if (err)
       throw err;
     else {
-      return res.json(200, data);
+      return res.status(200).json(data);
     }
   });
 });
 var connectedUsers = {};
 
 io.on('connection', function (socket){
-  socket.broadcast.emit('new user', 'a new user joined');
-  socket.on('chat message', function (msg){
-    var newMsg = new Msg({ msg : msg });
+  socket.broadcast.emit('new user', { msg: 'a new user joined' });
+  socket.on('chat message', function (data){
+    var newMsg = new Msg({ msg : data });
     newMsg.save(function (err) {
       if (err)
         throw err;
       else
-        io.emit('chat message', newMsg);
+        socket.broadcast.emit('chat message', newMsg);
     });
   });
   socket.on('disconnect', function (){
-    socket.broadcast.emit('user disconnect', 'a user disconnected');
+    socket.broadcast.emit('user disconnect', { msg: 'a user disconnected' });
   });
 });
 
